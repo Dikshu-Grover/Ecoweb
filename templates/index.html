@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EcoWeb</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+  <h1 class="text-success fw-bold">🌱 EcoWeb – Carbon Intelligence for the Internet</h1>
+  <p class="text-muted">Analyze website footprint, get a green score, compare before/after, and export a PDF report.</p>
+
+  <form method="POST" class="mt-3">
+    <input type="text" name="url" class="form-control form-control-lg" placeholder="Enter website URL (e.g. wikipedia.org)" required>
+    <button class="btn btn-success btn-lg mt-3">Analyze</button>
+  </form>
+
+  {% if result %}
+  <div class="mt-4 p-4 bg-white rounded shadow-sm">
+
+    <div class="d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">Results</h3>
+      <span class="badge bg-{{ result.rating_badge }} fs-6">{{ result.rating }}</span>
+    </div>
+
+    <hr>
+
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="p-3 border rounded">
+          <div class="text-muted">Page Size (HTML)</div>
+          <div class="fs-4 fw-bold">{{ result.size }} MB</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-3 border rounded">
+          <div class="text-muted">CO₂ / visit</div>
+          <div class="fs-4 fw-bold">{{ result.co2 }} g</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-3 border rounded">
+          <div class="text-muted">Green Score</div>
+          <div class="fs-4 fw-bold">{{ result.score }}/100</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="p-3 border rounded">
+          <div class="text-muted">CO₂ Saved</div>
+          <div class="fs-4 fw-bold text-success">{{ result.co2_saved }} g</div>
+          <div class="small text-muted">({{ result.saved_percent }}% after optimization)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mt-2">
+      <div class="col-md-3"><div class="p-3 border rounded"><b>Images</b>: {{ result.images }}</div></div>
+      <div class="col-md-3"><div class="p-3 border rounded"><b>Scripts</b>: {{ result.scripts }}</div></div>
+      <div class="col-md-3"><div class="p-3 border rounded"><b>Videos</b>: {{ result.videos }}</div></div>
+      <div class="col-md-3"><div class="p-3 border rounded"><b>Links</b>: {{ result.links }}</div></div>
+    </div>
+
+    <hr class="my-4">
+
+    <h4>Before vs After (Optimization Simulation)</h4>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="p-3 border rounded">
+          <div class="text-muted">Optimized Size</div>
+          <div class="fs-5 fw-bold">{{ result.opt_size }} MB</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 border rounded">
+          <div class="text-muted">Optimized CO₂</div>
+          <div class="fs-5 fw-bold">{{ result.opt_co2 }} g</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 border rounded">
+          <div class="text-muted">CO₂ Saved</div>
+          <div class="fs-5 fw-bold text-success">{{ result.co2_saved }} g ({{ result.saved_percent }}%)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <h5>AI Tips</h5>
+      <ul>
+        {% for tip in result.tips %}
+          <li>{{ tip }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if saved_id %}
+      <a class="btn btn-outline-dark mt-2" href="/report/{{ saved_id }}">⬇️ Download PDF Report</a>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  <div class="row mt-5 g-4">
+    <div class="col-md-6">
+      <div class="p-4 bg-white rounded shadow-sm">
+        <h4 class="mb-3">🏆 Top Green Sites (Highest Score)</h4>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Score</th>
+                <th>CO₂ (g)</th>
+                <th>URL</th>
+                <th>PDF</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in top_green %}
+              <tr>
+                <td><b>{{ r["score"] }}</b></td>
+                <td>{{ r["co2"] }}</td>
+                <td class="text-truncate" style="max-width: 240px;">{{ r["url"] }}</td>
+                <td><a href="/report/{{ r['id'] }}">PDF</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="small text-muted">Tip: analyze your college website + 2–3 popular sites and show this leaderboard in PPT.</div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="p-4 bg-white rounded shadow-sm">
+        <h4 class="mb-3">🕒 Recent Analyses</h4>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Score</th>
+                <th>CO₂ (g)</th>
+                <th>URL</th>
+                <th>PDF</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in latest %}
+              <tr>
+                <td class="small text-muted">{{ r["created_at"] }}</td>
+                <td><b>{{ r["score"] }}</b></td>
+                <td>{{ r["co2"] }}</td>
+                <td class="text-truncate" style="max-width: 220px;">{{ r["url"] }}</td>
+                <td><a href="/report/{{ r['id'] }}">PDF</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
