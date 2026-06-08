@@ -65,10 +65,6 @@ EcoWeb was created to make digital sustainability easier to understand and encou
 * ESG reporting integrations
 * Carbon monitoring dashboard
 
-## Built For
-
-Vibe Coding Competition 2026
-
 ## Author
 
 Dikshu Grover
